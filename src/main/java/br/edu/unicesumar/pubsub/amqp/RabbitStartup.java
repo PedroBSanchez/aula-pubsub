@@ -14,7 +14,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import br.edu.unicesumar.pubsub.domain.Aluno;
+import br.edu.unicesumar.pubsub.dto.Message;
 
 @Component
 public class RabbitStartup {
@@ -22,13 +22,23 @@ public class RabbitStartup {
     @Autowired
     private AmqpAdmin amqpAdmin;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
 
     @PostConstruct
-    private void adiciona() {
+    private void postConstruct() {
+        DirectExchange msgDirect = new DirectExchange("msg-direct", true, false);
+        Queue myQueue = new Queue(Message.myUser, true, false, false);
+        Binding bindingMsgDirectMyQueue = new Binding(Message.myUser, DestinationType.QUEUE, msgDirect.getName(), Message.myUser, null);
 
-        Queue filaLogInfo = new Queue("info", true, false, false);
+        this.amqpAdmin.declareExchange(msgDirect);
+        this.amqpAdmin.declareQueue(myQueue);
+        this.amqpAdmin.declareBinding(bindingMsgDirectMyQueue);
+    }
+
+       /* 
+        @Autowired
+    private RabbitTemplate rabbitTemplate;
+       
+       Queue filaLogInfo = new Queue("info", true, false, false);
         Queue filaLogWarn = new Queue("warn", true, false, false);
         Queue filaLogError = new Queue("error", true, false, false);
         Queue filaLog = new Queue("log-geral", true, false, false);
@@ -73,10 +83,7 @@ public class RabbitStartup {
         //this.amqpAdmin.declareBinding(bindingTeste);
 
         //this.rabbitTemplate.convertAndSend(fanoutExchangeTeste.getName(), "", "message");
-
-    }
-
-   /* @RabbitListener(queues = "fila-teste", ackMode = "AUTO")
+ @RabbitListener(queues = "fila-teste", ackMode = "AUTO")
     private void consumerFilaTeste(Aluno aluno) {
         try {
             Thread.sleep(15000);
@@ -85,5 +92,8 @@ public class RabbitStartup {
         }
         System.out.println(aluno);
     }*/
+
+
+   
 
 }
